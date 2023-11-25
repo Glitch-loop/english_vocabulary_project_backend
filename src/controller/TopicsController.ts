@@ -6,13 +6,13 @@ import { failResponse } from "../utils/response";
 
 async function addTopicController(data: any):Promise<IRequest<ITopic>> {
   try {
-    const { topic_name } = data;
+    const { topic_name }:{ topic_name:string } = data;
     const newTopic:ITopic = {
       id_topic: 0,
-      topic_name: topic_name
+      topic_name: topic_name.toLowerCase()
     }
 
-    const query = `INSERT INTO ${tables.TOPICS} (topic_name) VALUES ('${topic_name}')`;
+    const query = `INSERT INTO ${tables.TOPICS} (topic_name) VALUES ('${topic_name.toLowerCase()}')`;
     const responseServer:IRequest<any> = await requester({pool, sqlQuery: query});
 
     
@@ -31,7 +31,8 @@ async function addTopicController(data: any):Promise<IRequest<ITopic>> {
 
 async function getAllTopicsController():Promise<IRequest<ITopic[]>> {
   try {
-    const query = `SELECT * FROM ${tables.TOPICS}`;
+    const query = `SELECT * FROM ${tables.TOPICS} ORDER BY topic_name ASC`;
+    console.log(query)
     const responseServer:IRequest<ITopic[]> = await requester({pool, sqlQuery: query});
     return responseServer;
   } catch (error) {
@@ -41,10 +42,10 @@ async function getAllTopicsController():Promise<IRequest<ITopic[]>> {
 
 async function updateTopicController(data: any, params: any):Promise<IRequest<any>> {
   try {
-    const { topic } = data;
+    const { topic_name }:{ topic_name:string } = data;
     const { idTopic } = params;
     
-    const query = `UPDATE ${tables.TOPICS} SET topic_name = '${ topic }' WHERE id_topic = ${ idTopic }`;  
+    const query = `UPDATE ${tables.TOPICS} SET topic_name = '${ topic_name.toLowerCase() }' WHERE id_topic = ${ idTopic }`;  
     const responseServer:IRequest<any> = await requester({pool, sqlQuery: query});
     return responseServer;
   } catch (error) {

@@ -7,10 +7,20 @@ import { failResponse } from "../utils/response";
 
 async function addMeaningController(data: any):Promise<IRequest<IMeaning>> {
   try {
-    const { meaning, source, id_word, id_topic, id_word_class } = data;
+    const { meaning, 
+        source, 
+        id_word, 
+        id_topic, 
+        id_word_class }:{
+        meaning:string, 
+        source:string,
+        id_word:number,
+        id_topic:number,
+        id_word_class:number
+      } = data;
     const newMeaning:IMeaning = {
       id_meaning: 0,
-      meaning: meaning,
+      meaning: meaning.toLowerCase(),
       source: source,
       recently_practiced: 0,
       times_practiced: 0,
@@ -35,6 +45,7 @@ async function addMeaningController(data: any):Promise<IRequest<IMeaning>> {
 
     return responseServer;
   } catch (error) {
+    console.log(error)
     return failResponse;
   }
 }
@@ -47,7 +58,14 @@ async function putMeaningController(data: any, params: any):Promise<IRequest<any
 
     for(const key in data) {
       if(typeof data[key] === "string"){
-          updateOperations = updateOperations + `${key} = '${data[key]}', `;
+          let information:string = "";
+          if(key === "meaning")  {
+            information = data[key]
+            updateOperations = updateOperations + `${key} = '${information.toLowerCase()}', `;
+          } else {
+            updateOperations = updateOperations + `${key} = '${data[key]}', `;
+          }
+
       }
 
       if(typeof data[key] === "number"){
