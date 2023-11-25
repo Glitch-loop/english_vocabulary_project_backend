@@ -50,7 +50,6 @@ const transactionalPool = async({pool, sqlQuery}: {pool: mysql.Pool, sqlQuery: s
                   }
                 });
               }
-              console.log("queryResults:", queryResults)
               resolve1({statusCode: 200, response: queryResults});
             });
           })

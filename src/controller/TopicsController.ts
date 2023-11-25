@@ -32,7 +32,6 @@ async function addTopicController(data: any):Promise<IRequest<ITopic>> {
 async function getAllTopicsController():Promise<IRequest<ITopic[]>> {
   try {
     const query = `SELECT * FROM ${tables.TOPICS} ORDER BY topic_name ASC`;
-    console.log(query)
     const responseServer:IRequest<ITopic[]> = await requester({pool, sqlQuery: query});
     return responseServer;
   } catch (error) {

@@ -56,13 +56,15 @@ async function getActivityController(data: any):Promise<IRequest<IWord[]>>
       const meanings:any[] = responseMeanings.response;
       const wordToPractice:IWord[] = [];
 
-      console.log(meanings.length);
+      // console.log("numberWords: ", numberWords);
+      // console.log("meanings: ", meanings.length);
+      console.log("meanings.length: ", meanings.length);
       console.log("numberWords: ", numberWords);
       if((meanings.length - 1 < numberWords) 
         && lessStudiedWord === false) {
         /*
-          This means that there is not words enough to satisfy the request,
-          so we need to complete it.
+          There is not enough words to satisfay the request, so execute a query which
+          bring all the words that recently haven't been practiced.
         */
         let queryRecover = `SELECT * FROM ${tables.MEANINGS} AS A JOIN ${tables.WORDS} AS B ON A.id_word = B.id_word ${ topicToConsider } AND recently_practiced = 0`;
         
@@ -71,21 +73,22 @@ async function getActivityController(data: any):Promise<IRequest<IWord[]>>
         console.log("Candidate remainig")
         if(responseRemainingNumber.response !== undefined) {
           const candidatesMeanings:any[] = responseMeanings.response;
-          console.log("candidatesMeanings: ", candidatesMeanings)
+          // console.log("candidatesMeanings: ", candidatesMeanings)
+          // Push in the array the word to complete the request
           for(let i = 0; i < candidatesMeanings.length; i++) {
             if(meanings.length < numberWords - 1) meanings.push(candidatesMeanings[i]);
           }
-          
-          if(meanings.length - 1 < numberWords) {
+
+          if(meanings.length < numberWords) {
+              /*
+                If after the general search, it doesn't still full filled, so it's needed a
+                general reset (recently_practiced)
+              */
 
               //Reset the set
               let updateQuery = `UPDATE ${ tables.MEANINGS } SET recently_practiced = 0 ${ topicToConsider }`;
               await requester({pool, sqlQuery: updateQuery});
 
-            /*
-              That means that the number of words that ask the user hasn't reached yet
-              All the words in the subset have been practiced once
-            */
             let allWordsQueryRecover = `SELECT * FROM ${tables.MEANINGS} AS A JOIN ${tables.WORDS} AS B ON A.id_word = B.id_word WHERE recently_practiced = 0`;
 
             const responseLastRemaining:IRequest<any[]> = await requester({pool, sqlQuery: allWordsQueryRecover});
@@ -132,7 +135,9 @@ async function getActivityController(data: any):Promise<IRequest<IWord[]>>
       }
 
       // Update those words that will be practiced
+      console.log("UPDATE words")
       for(let i = 0; i < meanings.length; i++) {
+        console.log("Word: ", meanings[i].word)
         let updateMeaning = 
           `UPDATE ${ tables.MEANINGS } SET recently_practiced = 1, times_practiced = ${ meanings[i].times_practiced + 1} WHERE id_meaning = ${meanings[i].id_meaning}`;
 
